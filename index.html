@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jersey+10+Charted&display=swap" rel="stylesheet">
+  <link href=’https://fonts.googleapis.com/css?family=Aclonica’ rel=’stylesheet’>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>MediaHub</title>
+  <style>
+    .title{
+      font-family: "Jersey 10 Charted", sans-serif;
+      font-weight: 400;
+      font-size: 80px;
+    }
+
+    
+    #nav-bar {
+      background-color: darkred;
+      color: white;
+      width: 100%;
+      height:min-content;
+      padding: 1px 0;
+    }
+
+    #nav-div {
+      text-align: center;
+      font-size: 40px;
+    }
+
+    
+    #searchInput {
+         width: 35%;
+         padding: 10px 30px 10px 10px; 
+         font-family: 'Times New Roman', Times, serif;
+         font-size: 18px;
+         border-radius: 5px;
+         border: 1px solid #ccc;
+         margin: 0 auto; 
+         display: block; 
+         background-image: url('https://cdn-icons-png.flaticon.com/512/622/622669.png'); 
+         background-size: 20px;
+         background-repeat: no-repeat; 
+         background-position: 95% center;
+    }
+
+    #searchInput::-webkit-search-decoration,
+    #searchInput::-webkit-search-cancel-button,
+    #searchInput::-webkit-search-results-button,
+    #searchInput::-webkit-search-results-decoration {
+        display: none;
+    }
+
+   
+    .card {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .container {
+      background-color: darkred;
+      padding: 20px;
+      margin: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+      color: white;
+    }
+
+    .container img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .container h4 {
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    body {
+        background-color: black;
+    }
+
+    .pill {
+        font-size: 15px; 
+        font-family: ‘Aclonica‘;
+        padding: 0.5em 1.25em; 
+        margin: 0.25em;
+        border-radius: 1.5em; 
+        border: none;
+        outline: none;
+        background: white;
+        cursor: pointer;
+    }
+
+    .pill:hover {
+      background: black;
+      color: white;
+    }
+
+    .banner{
+        display: block; 
+        margin: 0 auto; 
+        width: 60%; 
+        height: 150px; 
+    }
+
+    
+    .details-button {
+      margin-top: 10px;
+      font-family: 'Times New Roman', Times, serif;
+      background-color: darkred;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    .details-button:hover {
+      color: blue;
+      background-color: darkred;
+    }
+
+    
+    .review-section {
+      display: none;
+      background-color: #f2f2f2;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .review-section textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      resize: vertical;
+    }
+    .popup {
+      width: 400px;
+      color: red;
+      background: black;
+      border-radius: 12px;
+      position: fixed; 
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.1);
+      text-align: center;
+      padding: 0 30px 30px;
+      visibility: hidden;
+      z-index: 9999; 
+    }
+
+
+    .open-popup {
+      visibility: visible;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+
+    .center{
+      margin: 0 auto;
+    }
+  </style>
+</head>
+
+<body>
+ 
+  <nav id="nav-bar">
+    <div id="nav-div">
+      <p class="title"> MediaHub Movies</p>
+      <img class= banner src="moviebanner.JPG">
+      <p>
+        <button onclick="openHtmlFileInSameTab('games.html')" class="pill" type="button">
+          GAMES
+        </button>
+        <button onclick="openHtmlFileInSameTab('index.html')" class="pill" type="button">
+          MOVIES
+        </button>
+      </p>
+    </div>
+  </nav>
+
+  
+  <header>
+    <input type="text" id="searchInput" onkeyup="searchMovies()" placeholder="Search for movies...">
+  </header>
+
+ 
+  <div class="popup" id="movieDetailsPopup">
+    <button class="pill details-button center"onclick="closePopup()">Close</button>
+    <div id="movieDetailsContent"></div>
+  </div>
+
+  <script>
+    let moviesData = []; 
+
+    
+    async function fetchAndRenderMovies() {
+      try {
+        let response = await fetch('https://raw.githubusercontent.com/prust/wikipedia-movie-data/master/movies-2020s.json');
+        moviesData = await response.json();
+        renderAllMovies();
+      } catch (error) {
+        console.error('Error fetching movies data:', error);
+      }
+    }
+
+    // Function to render all movies
+    function renderAllMovies() {
+      const cardContainer = document.querySelector('.card');
+      let html = '';
+      moviesData.forEach(movie => {
+        html += `<div class="container">
+                    <img src="${movie.thumbnail}" alt="Movie Thumbnail">
+                    <h4><b>Title:</b> ${movie.title}</h4>
+                    <h4><b>Year of Release:</b> ${movie.year}</h4>
+                    <button class="pill details-button center" onclick="openPopup(event, '${movie.title}')"> <u>View Details</u></button>
+                    <p>
+                    <button class="pill center" onclick="toggleReviewSection('${movie.title}')">Leave a Review</button>
+                    </p>
+                    <div class="review-section" id="${movie.title.replace(/\s+/g, '-').toLowerCase()}-review-section">
+                      <textarea rows="4" placeholder="Write your review for ${movie.title}"></textarea>
+                      <button onclick="submitReview('${movie.title}')" class="details-button">Submit Review</button>
+                    </div>
+                 </div>`;
+      });
+      cardContainer.innerHTML = html;
+    }
+
+    // Function to toggle review section visibility
+    function toggleReviewSection(movieTitle) {
+      const reviewSectionId = movieTitle.replace(/\s+/g, '-').toLowerCase() + '-review-section';
+      const reviewSection = document.getElementById(reviewSectionId);
+      if (reviewSection.style.display === 'none') {
+        reviewSection.style.display = 'block';
+      } else {
+        reviewSection.style.display = 'none';
+      }
+    }
+
+    // Function to submit review
+    function submitReview(movieTitle) {
+      const reviewSectionId = movieTitle.replace(/\s+/g, '-').toLowerCase() + '-review-section';
+      const reviewTextarea = document.querySelector(`#${reviewSectionId} textarea`);
+      const review = reviewTextarea.value.trim();
+      console.log(`Review for ${movieTitle}:`, review);
+      reviewTextarea.value = '';
+      toggleReviewSection(movieTitle);
+    }
+
+    // Function to open movie details popup
+    function openPopup(event, movieTitle) {
+      event.preventDefault(); 
+      const movie = moviesData.find(movie => movie.title === movieTitle);
+      const popup = document.getElementById('movieDetailsPopup');
+      const movieDetailsContent = document.getElementById('movieDetailsContent');
+      if (movie) {
+        movieDetailsContent.innerHTML = `
+          <h2>${movie.title}</h2>
+          <p><b>Description:</b> ${movie.extract}</p>
+          <p><b>Cast:</b> ${movie.cast}</p>
+        `;
+        popup.classList.add('open-popup');
+        window.scrollTo(0, 0);
+      }
+    }
+
+    // Function to close movie details popup
+    function closePopup() {
+      const popup = document.getElementById('movieDetailsPopup');
+      popup.classList.remove('open-popup');
+    }
+
+    // Function to search movies
+    function searchMovies() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const filteredMovies = moviesData.filter(movie => movie.title.toLowerCase().includes(searchTerm));
+      renderFilteredMovies(filteredMovies);
+    }
+
+    // Function to render filtered movies
+    function renderFilteredMovies(filteredMovies) {
+      const cardContainer = document.querySelector('.card');
+      let html = '';
+      filteredMovies.forEach(movie => {
+        html += `<div class="container">
+                    <img src="${movie.thumbnail}" alt="Movie Thumbnail">
+                    <h4><b>Title:</b> ${movie.title}</h4>
+                    <h4><b>Year of Release:</b> ${movie.year}</h4>
+                    <button class="pill" onclick="toggleReviewSection('${movie.title}')">Leave a Review</button>
+                    <button class="details-button" onclick="openPopup(event, '${movie.title}')">View Details</button>
+
+                    <div class="review-section" id="${movie.title.replace(/\s+/g, '-').toLowerCase()}-review-section">
+                      <textarea rows="4" placeholder="Write your review for ${movie.title}"></textarea>
+                      <button onclick="submitReview('${movie.title}')" class="details-button">Submit Review</button>
+                    </div>
+                 </div>`;
+      });
+      cardContainer.innerHTML = html;
+    }
+
+    window.onload = fetchAndRenderMovies;
+
+    function openHtmlFileInSameTab(filePath) {
+      history.pushState(null, null, filePath);
+      window.location.href = filePath;
+    }
+
+  </script>
+
+
+</head>
+
+<body>
+
+  <div class="card"></div>
+
+</body>
+
+</html>
